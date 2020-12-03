@@ -1,7 +1,7 @@
 from tensorflow import keras
 from tensorflow.keras import layers
 from mlflow import log_metric
-import gzip, pickle
+import gzip, pickle, os
 import numpy as np
 import tensorflow as tf
 

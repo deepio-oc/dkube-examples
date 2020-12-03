@@ -7,6 +7,7 @@ import tensorflow as tf
 
 batch_size = 128
 epochs = int(os.getenv("EPOCHS","15"))
+print ("Number of epochs:", epochs)
 num_classes = 10
 input_shape = (28, 28, 1)
 
@@ -47,10 +48,10 @@ model = keras.Sequential(
 
 class loggingCallback(keras.callbacks.Callback):
     def on_epoch_end(self, epoch, logs=None):
-        log_metric ("train_loss", logs["loss"])
-        log_metric ("train_accuracy", logs["accuracy"])
-        log_metric ("val_loss", logs["val_loss"])
-        log_metric ("val_accuracy", logs["val_accuracy"])
+        log_metric ("train_loss", logs["loss"], step=epoch)
+        log_metric ("train_accuracy", logs["accuracy"], step=epoch)
+        log_metric ("val_loss", logs["val_loss"], step=epoch)
+        log_metric ("val_accuracy", logs["val_accuracy"], step=epoch)
 
 
 model.compile(loss="categorical_crossentropy", optimizer="adam", metrics=["accuracy"])

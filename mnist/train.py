@@ -58,4 +58,5 @@ model.compile(loss="categorical_crossentropy", optimizer="adam", metrics=["accur
 
 model.fit(x_train, y_train, batch_size=batch_size, epochs=epochs, verbose=0, validation_split=0.1, callbacks=[loggingCallback()])
 
-tf.saved_model.save(model,"/opt/dkube/output/1")
+tf.saved_model.save(model,"/tmp/mnist")
+os.system("mv /tmp/mnist/data /opt/dkube/output/1")

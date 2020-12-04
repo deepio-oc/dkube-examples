@@ -58,6 +58,5 @@ model.compile(loss="categorical_crossentropy", optimizer="adam", metrics=["accur
 
 model.fit(x_train, y_train, batch_size=batch_size, epochs=epochs, verbose=0, validation_split=0.1, callbacks=[loggingCallback()])
 
-tf.saved_model.save(model,"/tmp/")
-os.system("ls -lR /tmp")
-os.system("mv /tmp/data /opt/dkube/output/1")
+os.makedirs("/opt/dkube/output/1", exist_ok=True)
+tf.saved_model.save(model,"/opt/dkube/output/1")

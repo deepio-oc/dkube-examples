@@ -41,7 +41,6 @@ class ImageTransformer(kfserving.KFModel):
         self.predictor_host = predictor_host
 
     def preprocess(self, inputs: Dict) -> Dict:
-        logging.info("preprocess2")
         del inputs['instances']
         try:
             json_data = inputs

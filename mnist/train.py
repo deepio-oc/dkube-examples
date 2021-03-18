@@ -1,16 +1,25 @@
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 from tensorflow import keras
 from tensorflow.keras import layers
 from mlflow import log_metric
 import gzip, pickle, os
 import numpy as np
 import tensorflow as tf
+import argparse
 
-batch_size = 128
-epochs = int(os.getenv("EPOCHS","15"))
+parser = argparse.ArgumentParser()
+parser.add_argument('--batch_size', type=int, default=128, help='Batch size for training.')
+parser.add_argument('--num_epochs', type=int, default=int(os.getenv("EPOCHS","5")), help='Number of epochs to train for.')
+args = parser.parse_args()
+
+batch_size = args.batch_size
+epochs = args.num_epochs
 print ("Number of epochs:", epochs)
 num_classes = 10
 input_shape = (28, 28, 1)
-MODEL_DIR = "/opt/dkube/output"
+MODEL_DIR = "/model/"
+
 #load dataset
 f = gzip.open('/mnist/mnist.pkl.gz', 'rb')
 data = pickle.load(f, encoding='bytes')
@@ -46,18 +55,24 @@ model = keras.Sequential(
     ]
 )
 
+# mlflow metric logging
 class loggingCallback(keras.callbacks.Callback):
     def on_epoch_end(self, epoch, logs=None):
-        log_metric ("train_loss", logs["loss"], step=epoch)
-        log_metric ("train_accuracy", logs["accuracy"], step=epoch)
-        log_metric ("val_loss", logs["val_loss"], step=epoch)
-        log_metric ("val_accuracy", logs["val_accuracy"], step=epoch)
+        accuracy_metric = "accuracy"
+        if "acc" in logs:
+            accuracy_metric = "acc"
 
+        log_metric ("train_loss", logs["loss"], step=epoch)
+        log_metric ("train_accuracy", logs[accuracy_metric], step=epoch)
+        log_metric ("val_loss", logs["val_loss"], step=epoch)
+        log_metric ("val_accuracy", logs["val_" + accuracy_metric], step=epoch)
+        # output accuracy metric for katib to collect from stdout
+        print(f"accuracy={logs['val_' + accuracy_metric]}")
 
 model.compile(loss="categorical_crossentropy", optimizer="adam", metrics=["accuracy"])
 
 model.fit(x_train, y_train, batch_size=batch_size, epochs=epochs, verbose=0, validation_split=0.1, 
         callbacks=[loggingCallback(), tf.keras.callbacks.TensorBoard(log_dir=MODEL_DIR)])
 
-os.makedirs(f"{MODEL_DIR}/1", exist_ok=True)
-tf.saved_model.save(model,f"{MODEL_DIR}/1")
+tf.keras.backend.set_learning_phase(0)  # Ignore dropout at inference
+tf.saved_model.save(model,MODEL_DIR + str(1))

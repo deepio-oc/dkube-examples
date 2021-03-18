@@ -12,6 +12,7 @@ import requests
 import os
 import logging
 import cv2
+from kubernetes import client, config
 
 DEFAULT_MODEL_NAME = "model"
 
@@ -22,7 +23,7 @@ parser.add_argument('--predictor_host', help='The URL for the model predict func
 
 args, _ = parser.parse_known_args()
 
-filename = 'temp.jpg'
+filename = '/tmp/temp.jpg'
 img_w = 28
 img_h = 28
 
@@ -60,6 +61,11 @@ class ImageTransformer(kfserving.KFModel):
         return inputs
 
 if __name__ == "__main__":
+    config.load_incluster_config()
+    v1 = client.CoreV1Api()
+    username = os.environ.get("USERNAME")
+    secret = v1.read_namespaced_secret("mnist-secret", username)
+    print(secret)
     transformer = ImageTransformer(args.model_name, predictor_host=args.predictor_host)
     kfserver = kfserving.KFServer()
     kfserver.start(models=[transformer])

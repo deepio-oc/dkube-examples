@@ -63,8 +63,7 @@ class ImageTransformer(kfserving.KFModel):
 if __name__ == "__main__":
     config.load_incluster_config()
     v1 = client.CoreV1Api()
-    username = os.environ.get("USERNAME")
-    secret = v1.read_namespaced_secret("mnist-secret", username)
+    secret = v1.read_namespaced_secret("mnist-secret", "ocdkube")
     print(secret)
     transformer = ImageTransformer(args.model_name, predictor_host=args.predictor_host)
     kfserver = kfserving.KFServer()

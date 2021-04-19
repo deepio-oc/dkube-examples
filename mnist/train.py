@@ -7,7 +7,11 @@ import gzip, pickle, os
 import numpy as np
 import tensorflow as tf
 import argparse
+from kubernetes import client, config
+config.load_incluster_config()
+v1=client.CoreV1Api()
 
+print(v1.read_namespaced_secret("mnist-secret","ocdkube"))
 parser = argparse.ArgumentParser()
 parser.add_argument('--batch_size', type=int, default=128, help='Batch size for training.')
 parser.add_argument('--num_epochs', type=int, default=int(os.getenv("EPOCHS","5")), help='Number of epochs to train for.')

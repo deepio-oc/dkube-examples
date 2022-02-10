@@ -12,7 +12,7 @@ import requests
 import os
 import logging
 import cv2
-from kubernetes import client, config
+import time, random
 
 DEFAULT_MODEL_NAME = "model"
 
@@ -42,6 +42,7 @@ class ImageTransformer(kfserving.KFModel):
         self.predictor_host = predictor_host
 
     def preprocess(self, inputs: Dict) -> Dict:
+        time.sleep(int(10*random.random()))
         del inputs['instances']
         try:
             json_data = inputs
@@ -58,13 +59,12 @@ class ImageTransformer(kfserving.KFModel):
         return payload
 
     def postprocess(self, inputs: List) -> List:
+        prediction = np.argmax(inputs["outputs"][0])
+        del inputs['outputs']
+        inputs["digit"] = int(prediction)
         return inputs
 
 if __name__ == "__main__":
-    config.load_incluster_config()
-    v1 = client.CoreV1Api()
-    secret = v1.read_namespaced_secret("mnist-secret", "ocdkube")
-    print(secret)
     transformer = ImageTransformer(args.model_name, predictor_host=args.predictor_host)
     kfserver = kfserving.KFServer()
     kfserver.start(models=[transformer])

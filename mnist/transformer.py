@@ -42,7 +42,6 @@ class ImageTransformer(kfserving.KFModel):
         self.predictor_host = predictor_host
 
     def preprocess(self, inputs: Dict) -> Dict:
-        time.sleep(int(10*random.random()))
         del inputs['instances']
         try:
             json_data = inputs
@@ -59,6 +58,7 @@ class ImageTransformer(kfserving.KFModel):
         return payload
 
     def postprocess(self, inputs: List) -> List:
+        time.sleep(int(10*random.random()))
         prediction = np.argmax(inputs["outputs"][0])
         del inputs['outputs']
         inputs["digit"] = int(prediction)
